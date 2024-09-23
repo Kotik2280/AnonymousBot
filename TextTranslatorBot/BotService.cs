@@ -1,4 +1,5 @@
-﻿using Telegram.Bot;
+﻿using System.Net.Mail;
+using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -9,6 +10,7 @@ namespace AnonimusBot
     {
         private TelegramBotClient _bot;
         private string connectionString;
+        private Registrator registrator;
         private Database database;
 
         public BotService(string token, string dbConnectionString)
@@ -17,6 +19,7 @@ namespace AnonimusBot
             _bot = new TelegramBotClient(token);
 
             database = new Database(dbConnectionString);
+            registrator = new Registrator(database);
         }
         public void Start()
         {
@@ -31,71 +34,37 @@ namespace AnonimusBot
 
         private async Task UpdateTask(ITelegramBotClient client, Update update, CancellationToken token)
         {
-            MessageType messageType;
             Message? senderMessage = update.Message;
 
             if (senderMessage is null)
                 return;
-
-            messageType = senderMessage.GetMessageType();
 
             long updateUserId = senderMessage.Chat.Id;
             string updateMessageText = senderMessage.Text is null ? "" : senderMessage.Text;
 
             if (!await database.IsUserIdInVerifed(updateUserId))
             {
-                if (!await database.IsUserIdInRegistration(updateUserId))
-                {
-                    await client.SendTextMessageAsync(updateUserId, "Добро пожаловать!");
-                    await database.AddToRegistration(updateUserId);
-                    await client.SendTextMessageAsync(updateUserId, "Введите ник");
-                }
-                else
-                {
-                    await database.AddToVerifedUser(new User(updateUserId, updateMessageText));
-                    await database.RemoveFromRegistration(updateUserId);
-                    await client.SendTextMessageAsync(updateUserId, $"Приятного общения, {updateMessageText}!");
-
-
-                    List<User> users = await database.GetUsersAsync();
-
-                    foreach (User user in users)
-                    {
-                        Console.WriteLine(user);
-                        await client.SendTextMessageAsync(user.Id, $"{updateMessageText} присоединился к чату!");
-                    }
-                }
+                await registrator.HandleRegistration(client, updateUserId, updateMessageText);
             }
             else
             {
-                User sender = await database.GetVerifedUserById(updateUserId);
-
-                string userServer = await database.GetServerAsync(sender.Id);
-
                 List<User> users = await database.GetUsersAsync();
-
-                switch (messageType)
-                {
-                    case MessageType.Text:
-                        foreach (User user in users)
-                        {
-                            if (user.Id == updateUserId)
-                                continue;
-                            await client.SendTextMessageAsync(user.Id, $"{database.GetVerifedUserById(updateUserId).Result.Name} : {updateMessageText}");
-                        }
-                        break;
-                    case MessageType.Sticker:
-                        foreach (User user in users)
-                        {
-                            if (user.Id == updateUserId)
-                                continue;
-                            await client.SendTextMessageAsync(user.Id, $"{database.GetVerifedUserById(updateUserId).Result.Name} :");
-                            await client.SendStickerAsync(user.Id, new InputFileId(update.Message.Sticker.FileId));
-                        }
-                        break;
-                    default:
-                        break;
-                }
+                User sender = await database.GetVerifedUserById(update.Message.Chat.Id);
+                await HandleSendMessage(client, sender, senderMessage, users);
+            }
+        }
+        private async Task HandleSendMessage(ITelegramBotClient client, User sender, Message message, IEnumerable<User> users)
+        {
+            switch (message.Type)
+            {
+                case MessageType.Text:
+                    await MessageSender.NotifyTextUsersExcludingSender(client, message.Text, users, sender);
+                    break;
+                case MessageType.Sticker:
+                    await MessageSender.NotifyStickerUsersExcludingSender(client, message.Sticker, users, sender);
+                    break;
+                default:
+                    break;
             }
         }
     }
