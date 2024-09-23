@@ -50,22 +50,9 @@ namespace AnonimusBot
             {
                 List<User> users = await database.GetUsersAsync();
                 User sender = await database.GetVerifedUserById(update.Message.Chat.Id);
-                await HandleSendMessage(client, sender, senderMessage, users);
+                await GlobalMessageSender.HandleSendMessage(client, sender, senderMessage, users);
             }
         }
-        private async Task HandleSendMessage(ITelegramBotClient client, User sender, Message message, IEnumerable<User> users)
-        {
-            switch (message.Type)
-            {
-                case MessageType.Text:
-                    await MessageSender.NotifyTextUsersExcludingSender(client, message.Text, users, sender);
-                    break;
-                case MessageType.Sticker:
-                    await MessageSender.NotifyStickerUsersExcludingSender(client, message.Sticker, users, sender);
-                    break;
-                default:
-                    break;
-            }
-        }
+        
     }
 }

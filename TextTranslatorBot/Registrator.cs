@@ -34,7 +34,7 @@ namespace AnonimusBot
 
             List<User> users = await database.GetUsersAsync();
 
-            await MessageSender.NotifyUsers(client, $"{nickname} присоединился к чату!", users);
+            await GlobalMessageSender.NotifyUsers(client, $"{nickname} присоединился к чату!", users);
         }
     }
 }
