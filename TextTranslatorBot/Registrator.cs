@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Telegram.Bot;
 
 namespace AnonimusBot
@@ -34,7 +30,7 @@ namespace AnonimusBot
 
             List<User> users = await database.GetUsersAsync();
 
-            await MessageSender.NotifyUsers(client, $"{nickname} присоединился к чату!", users);
+            await GlobalMessageSender.NotifyUsers(client, $"{nickname} присоединился к чату!", users);
         }
     }
 }
