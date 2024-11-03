@@ -25,8 +25,7 @@ namespace AnonimusBot
         }
         public async Task AddToRegistration(long id)
         {
-            command = new SqliteCommand("INSERT INTO @usersOnRegistration (id) VALUES (@id)", connection);
-            command.Parameters.Add(new SqliteParameter("@usersOnRegistration", usersOnRegistration));
+            command = new SqliteCommand($"INSERT INTO {usersOnRegistration} (id) VALUES (@id)", connection);
             command.Parameters.Add(new SqliteParameter("@id", id));
 
             try
@@ -41,8 +40,7 @@ namespace AnonimusBot
         }
         public async Task RemoveFromRegistration(long id)
         {
-            command = new SqliteCommand("DELETE FROM @usersOnRegistration WHERE id = @id", connection);
-            command.Parameters.Add(new SqliteParameter("@usersOnRegistration", usersOnRegistration));
+            command = new SqliteCommand($"DELETE FROM {usersOnRegistration} WHERE id = @id", connection);
             command.Parameters.Add(new SqliteParameter("@id", id));
 
             try
@@ -57,8 +55,7 @@ namespace AnonimusBot
         }
         public async Task AddToVerifedUser(User user)
         {
-            command = new SqliteCommand("INSERT INTO @verifedUsers (id, name, server) VALUES (@userId, @userName, @userServerConnectedName)", connection);
-            command.Parameters.Add(new SqliteParameter("@verifedUsers", verifedUsers));
+            command = new SqliteCommand($"INSERT INTO {verifedUsers} (id, name, server) VALUES (@userId, @userName, @userServerConnectedName)", connection);
             command.Parameters.Add(new SqliteParameter("@userId", user.Id));
             command.Parameters.Add(new SqliteParameter("@userName", user.Name));
             command.Parameters.Add(new SqliteParameter("@userServerConnectedName", user.ServerConnectedName));
@@ -75,8 +72,7 @@ namespace AnonimusBot
         }
         public async Task<bool> IsUserIdInVerifed(long id)
         {
-            command = new SqliteCommand("SELECT COUNT(id) FROM @verifedUsers WHERE id = @id", connection);
-            command.Parameters.Add(new SqliteParameter("@verifedUsers", verifedUsers));
+            command = new SqliteCommand($"SELECT COUNT(id) FROM {verifedUsers} WHERE id = @id", connection);
             command.Parameters.Add(new SqliteParameter("@id", id));
 
             long updId = (long)await command.ExecuteScalarAsync();
@@ -85,8 +81,7 @@ namespace AnonimusBot
         }
         public async Task<bool> IsUserIdInRegistration(long id)
         {
-            command = new SqliteCommand("SELECT COUNT(*) FROM @usersOnRegistration WHERE id = @id", connection);
-            command.Parameters.Add(new SqliteParameter("@usersOnRegistration", usersOnRegistration));
+            command = new SqliteCommand($"SELECT COUNT(*) FROM {usersOnRegistration} WHERE id = @id", connection);
             command.Parameters.Add(new SqliteParameter("@id", id));
 
             long count = 0;
@@ -105,8 +100,7 @@ namespace AnonimusBot
         }
         public async Task<User> GetVerifedUserById(long id)
         {
-            command = new SqliteCommand("SELECT * FROM @verifedUsers WHERE id = @id", connection);
-            command.Parameters.Add(new SqliteParameter("@verifedUsers", verifedUsers));
+            command = new SqliteCommand($"SELECT * FROM {verifedUsers} WHERE id = @id", connection);
             command.Parameters.Add(new SqliteParameter("@id", id));
 
             SqliteDataReader reader = await command.ExecuteReaderAsync();
@@ -123,8 +117,7 @@ namespace AnonimusBot
         {
             List<User> users = new List<User>();
 
-            command = new SqliteCommand("SELECT * FROM @verifedUsers", connection);
-            command.Parameters.Add(new SqliteParameter("@verifedUsers", verifedUsers));
+            command = new SqliteCommand($"SELECT * FROM {verifedUsers}", connection);
 
             SqliteDataReader reader = await command.ExecuteReaderAsync();
 
@@ -142,8 +135,7 @@ namespace AnonimusBot
         {
             List<User> users = new List<User>();
 
-            command = new SqliteCommand("SELECT * FROM @verifedUsers WHERE server = @serverName", connection);
-            command.Parameters.Add(new SqliteParameter("@verifedUsers", verifedUsers));
+            command = new SqliteCommand($"SELECT * FROM {verifedUsers} WHERE server = @serverName", connection);
             command.Parameters.Add(new SqliteParameter("@serverName", serverName));
 
             SqliteDataReader reader = await command.ExecuteReaderAsync();
@@ -160,8 +152,7 @@ namespace AnonimusBot
         }
         public async Task<string> GetServerAsync(long id)
         {
-            command = new SqliteCommand("SELECT server FROM @verifedUsers WHERE id = @id", connection);
-            command.Parameters.Add(new SqliteParameter("@verifedUsers", verifedUsers));
+            command = new SqliteCommand($"SELECT server FROM {verifedUsers} WHERE id = @id", connection);
             command.Parameters.Add(new SqliteParameter("@id", id));
 
             SqliteDataReader reader = await command.ExecuteReaderAsync();
@@ -176,8 +167,7 @@ namespace AnonimusBot
         }
         public async Task SetServerAsync(long id, string serverName)
         {
-            command = new SqliteCommand("UPDATE @verifedUsers SET server = @serverName WHERE id = @id", connection);
-            command.Parameters.Add(new SqliteParameter("@verifedUsers", verifedUsers));
+            command = new SqliteCommand($"UPDATE {verifedUsers} SET server = @serverName WHERE id = @id", connection);
             command.Parameters.Add(new SqliteParameter("@serverName", serverName));
             command.Parameters.Add(new SqliteParameter("@id", id));
 
@@ -193,8 +183,7 @@ namespace AnonimusBot
         }
         public async Task SetUsername(long id, string newUsername)
         {
-            command = new SqliteCommand("UPDATE @verifedUsers SET name = @newUsername WHERE id = @id", connection);
-            command.Parameters.Add(new SqliteParameter("@verifedUsers", verifedUsers));
+            command = new SqliteCommand($"UPDATE {verifedUsers} SET name = @newUsername WHERE id = @id", connection);
             command.Parameters.Add(new SqliteParameter("@newUsername", newUsername));
             command.Parameters.Add(new SqliteParameter("@id", id));
 
