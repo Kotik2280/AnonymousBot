@@ -7,11 +7,11 @@ namespace AnonimusBot
 {
     static public class GlobalMessageSender
     {
-        static public async Task NotifyUsers(ITelegramBotClient client, string message, IEnumerable<User> receivers)
+        static public async Task NotifyUsers(ITelegramBotClient client, IEnumerable<User> receivers, Func<User, string> messageMethod)
         {
             foreach (User user in receivers)
             {
-                await client.SendTextMessageAsync(user.Id, message);
+                await client.SendTextMessageAsync(user.Id, messageMethod.Invoke(user));
             }
         }
         static public async Task NotifyTextUsersExcludingSender(ITelegramBotClient client, string message, IEnumerable<User> receivers, User sender)

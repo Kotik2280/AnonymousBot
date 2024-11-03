@@ -6,8 +6,14 @@ namespace AnonimusBot
     public class Registrator
     {
         private Database database;
-        public Registrator(Database database) => this.database = database;
-        public async Task HandleRegistration(ITelegramBotClient client, long senderId, string message)
+        private ITelegramBotClient client;
+        public Registrator(ITelegramBotClient client, Database database)
+        {
+            this.database = database;
+            this.client = client;
+        }
+
+        public async Task HandleRegistration(long senderId, string message, Server server)
         {
             if (!await database.IsUserIdInRegistration(senderId))
             {
@@ -17,20 +23,15 @@ namespace AnonimusBot
             }
             else
             {
-                await CompleteUserRegistration(client, senderId, message);
+                await CompleteUserRegistration(senderId, message, server);
             }
         }
 
-        public async Task CompleteUserRegistration(ITelegramBotClient client, long senderId, string nickname)
+        public async Task CompleteUserRegistration(long senderId, string nickname, Server server)
         {
-            await database.AddToVerifedUser(new User(senderId, nickname));
+            await database.AddToVerifedUser(new User(senderId, nickname, server.Name));
             await database.RemoveFromRegistration(senderId);
             await client.SendTextMessageAsync(senderId, $"Приятного общения, {nickname}!");
-
-
-            List<User> users = await database.GetUsersAsync();
-
-            await GlobalMessageSender.NotifyUsers(client, $"{nickname} присоединился к чату!", users);
         }
     }
 }

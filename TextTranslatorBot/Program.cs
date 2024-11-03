@@ -8,8 +8,8 @@ namespace AnonimusBot
 {
     class Program
     {
-        private static string token { get; set; } = "6743289067:AAG-iMSmCZ8AgofmZXeef2PBiZXDVA4RWM8";
-        private static string dbConnectionString = @"Data Source=C:\Users\broke\source\repos\TextTranslatorBot\TextTranslatorBot\Databases\Test.db";
+        private static string token { get; set; } = "YOUR_TOKEN";
+        private static string dbConnectionString { get; set; } = @"Data Source=C:\Users\broke\source\repos\TextTranslatorBot\TextTranslatorBot\Databases\Test.db";
 
         static void Main()
         {
@@ -18,21 +18,6 @@ namespace AnonimusBot
             tgbot.Start();
 
             Console.ReadLine();
-        }
-    }
-    public static class Extentions
-    {
-        public static MessageType GetMessageType(this Message message)
-        {
-            if (message.Text is not null)
-                return MessageType.Text;
-            if (message.Sticker is not null)
-                return MessageType.Sticker;
-            if (message.VideoNote is not null)
-                return MessageType.VideoNote;
-            if (message.Audio is not null)
-                return MessageType.Voice;
-            return MessageType.Unknown;
         }
     }
 }
