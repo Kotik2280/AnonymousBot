@@ -7,6 +7,9 @@ namespace AnonimusBot
     {
         private Database database;
         private ITelegramBotClient client;
+
+        public delegate Task RegistrationCompleteDelegate(ITelegramBotClient client, long id);
+        public event RegistrationCompleteDelegate RegistrationCompleteEvent;
         public Registrator(ITelegramBotClient client, Database database)
         {
             this.database = database;
@@ -23,6 +26,11 @@ namespace AnonimusBot
             }
             else
             {
+                if (message.Contains(' '))
+                {
+                    await client.SendTextMessageAsync(senderId, "Имя пользователя не должно содержать пробел!");
+                    return;
+                }
                 await CompleteUserRegistration(senderId, message, server);
             }
         }
@@ -32,6 +40,8 @@ namespace AnonimusBot
             await database.AddToVerifedUser(new User(senderId, nickname, server.Name));
             await database.RemoveFromRegistration(senderId);
             await client.SendTextMessageAsync(senderId, $"Приятного общения, {nickname}!");
+
+            await RegistrationCompleteEvent.Invoke(this.client, senderId);
         }
     }
 }

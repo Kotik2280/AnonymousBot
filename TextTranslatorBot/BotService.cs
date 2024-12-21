@@ -1,13 +1,9 @@
-﻿using System.Reflection.Metadata.Ecma335;
-using System.Threading;
-using Telegram.Bot;
+﻿using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.ReplyMarkups;
 
 namespace AnonimusBot
 {
-
     public class BotService
     {
         private TelegramBotClient _bot;
@@ -16,20 +12,31 @@ namespace AnonimusBot
         private Database database;
         private Server generalServer;
         private CommandAnalizator commandAnalizator;
-
-        public BotService(string token, string dbConnectionString)
+        private NavigationMenu navigationMenu;
+        private CancellationToken cancellationToken;
+        public BotService(string token, string dbConnectionString, CancellationToken cancellationToken)
         {
+            this.cancellationToken = cancellationToken;
+
             connectionString = dbConnectionString;
             _bot = new TelegramBotClient(token);
 
-            database = new Database(dbConnectionString);
+            generalServer = new Server("None");
+            database = new Database(dbConnectionString, generalServer);
             registrator = new Registrator(_bot, database);
             commandAnalizator = new CommandAnalizator(database);
-            generalServer = new Server("Server_1");
+            navigationMenu = new NavigationMenu(database);
+
+            commandAnalizator.ServerQuitEvent += navigationMenu.ShowServerChoosingMenu;
+            registrator.RegistrationCompleteEvent += navigationMenu.ShowServerChoosingMenu;
         }
         public void Start()
         {
-            _bot.StartReceiving(UpdateTask, ErrorTask);
+            _bot.StartReceiving(
+                UpdateTask,
+                ErrorTask,
+                cancellationToken: cancellationToken
+                );
         }
 
         private async Task ErrorTask(ITelegramBotClient client, Exception exception, CancellationToken token)
@@ -42,22 +49,27 @@ namespace AnonimusBot
         private async Task UpdateTask(ITelegramBotClient client, Update update, CancellationToken token)
         {
             Message? senderMessage = update.Message;
+            long updateUserId = senderMessage is null ? update.CallbackQuery.Message.Chat.Id : senderMessage.Chat.Id;
 
-            if (senderMessage is null)
-                return;
-
-            long updateUserId = senderMessage.Chat.Id;
-            string updateMessageText = senderMessage.Text is null ? "" : senderMessage.Text;
 
             if (!await database.IsUserIdInVerifed(updateUserId))
             {
+                string updateMessageText = senderMessage.Text is null ? "" : senderMessage.Text;
                 await registrator.HandleRegistration(updateUserId, updateMessageText, generalServer);
             }
             else
             {
+                if (await database.GetServerAsync(updateUserId) == generalServer.Name && update.CallbackQuery is null)
+                    await navigationMenu.ShowServerChoosingMenu(client, updateUserId);
+                if (update.CallbackQuery is not null)
+                    await navigationMenu.NavigateUserToServer(client, update);
+
+                if (senderMessage is null)
+                    return;
+
                 await commandAnalizator.AnalizeCommand(client, update);
 
-                if (commandAnalizator.IsWaitForCommand(updateUserId))
+                if (commandAnalizator.IsWaitForCommand(updateUserId) || senderMessage.Text[0] == '/')
                     return;
 
                 User sender = await database.GetVerifedUserById(updateUserId);

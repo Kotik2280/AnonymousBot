@@ -14,6 +14,15 @@ namespace AnonimusBot
                 await client.SendTextMessageAsync(user.Id, messageMethod.Invoke(user));
             }
         }
+        static public async Task NotifyUsersExcludingSender(ITelegramBotClient client, IEnumerable<User> receivers, long senderId, Func<User, string> messageMethod)
+        {
+            foreach (User user in receivers)
+            {
+                if (user.Id == senderId)
+                    continue;
+                await client.SendTextMessageAsync(user.Id, messageMethod.Invoke(user));
+            }
+        }
         static public async Task NotifyTextUsersExcludingSender(ITelegramBotClient client, string message, IEnumerable<User> receivers, User sender)
         {
             foreach (User user in receivers)
