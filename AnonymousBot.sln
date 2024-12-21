@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.34928.147
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AnonimusBot", "TextTranslatorBot\AnonimusBot.csproj", "{265FD73F-1606-4BB7-A6D4-0DE9A6539BC2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AnonymousBot", "TextTranslatorBot\AnonymousBot.csproj", "{265FD73F-1606-4BB7-A6D4-0DE9A6539BC2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

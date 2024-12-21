@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Telegram.Bot;
-using Telegram.Bot.Types.ReplyMarkups;
+﻿using Telegram.Bot;
 
 namespace AnonimusBot
 {
@@ -16,18 +10,7 @@ namespace AnonimusBot
             this.client = client;
         }
         /*
-        public void ShowButtons(params string[] buttonsText, long id)
-        {
-            KeyboardButton[] keyboards = new KeyboardButton[buttonsText.Length];
-
-            for (int i = 0; i < buttonsText.Length; i++)
-            {
-                keyboards[i] = new KeyboardButton(buttonsText[i]);
-            }
-
-            var replyMarkUp = new ReplyKeyboardMarkup(keyboards) { ResizeKeyboard = true };
-
-
-        }*/
+            Будет использоваться вместо текстовых команд
+        */
     }
 }
