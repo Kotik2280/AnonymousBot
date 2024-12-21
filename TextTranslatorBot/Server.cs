@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace AnonimusBot
+﻿namespace AnonimusBot
 {
     public class Server
     {

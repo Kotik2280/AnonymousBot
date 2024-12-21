@@ -1,7 +1,4 @@
 ﻿using Microsoft.Data.Sqlite;
-using System;
-using System.Data;
-using System.Data.SqlTypes;
 
 namespace AnonimusBot
 {
@@ -12,7 +9,9 @@ namespace AnonimusBot
         private SqliteCommand command;
         private string verifedUsers;
         private string usersOnRegistration;
-        public Database(string connectionString)
+
+        public Server DefaultServer { get; set; }
+        public Database(string connectionString, Server defaultServer)
         {
             verifedUsers = "users";
             usersOnRegistration = "registration";
@@ -22,6 +21,7 @@ namespace AnonimusBot
             connection.Open();
 
             command = new SqliteCommand() { Connection = this.connection };
+            DefaultServer = defaultServer;
         }
         public async Task AddToRegistration(long id)
         {
@@ -159,7 +159,18 @@ namespace AnonimusBot
 
             reader.Read();
 
-            string server = (string)reader.GetValue(0);
+            string server = "None";
+
+            try
+            {
+                server = (string)reader.GetValue(0);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                Console.WriteLine(e.StackTrace);
+            }
+            
 
             reader.Close();
 
@@ -197,6 +208,34 @@ namespace AnonimusBot
                 Console.WriteLine(e.StackTrace);
             }
         }
+        public async Task<User?> GetUserAsync(string nickname, string serverName)
+        {
+            command = new SqliteCommand($"SELECT * FROM {verifedUsers} WHERE name = @username AND server = @serverName", connection);
+            command.Parameters.Add(new SqliteParameter("@username", nickname));
+            command.Parameters.Add(new SqliteParameter("@serverName", serverName));
+
+            SqliteDataReader reader = await command.ExecuteReaderAsync();
+
+            reader.Read();
+
+            User? user;
+            try
+            {
+                user = new User((long)reader.GetValue(0), (string)reader.GetValue(1), (string)reader.GetValue(2));
+            }
+            catch (Exception e)
+            {
+                user = null;
+
+                Console.WriteLine(e.Message);
+                Console.WriteLine(e.StackTrace);
+            }
+
+            reader.Close();
+
+            return await Task.Run(() => user);
+        }
+
         ~Database()
         {
             connection.Dispose();
